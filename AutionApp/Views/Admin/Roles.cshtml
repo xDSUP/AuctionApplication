@@ -1,0 +1,26 @@
+﻿@model IEnumerable<AutionApp.UserRole>
+
+@{
+    ViewData["Title"] = "Роли";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h1>Роли</h1>
+<p>
+    <a asp-action="CreateRole">Создать новую роль</a>
+</p>
+<table class="table">
+@foreach (var role in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => role.Name)
+            </td>
+            <td>
+                <form asp-action="DeleteRole" asp-route-id="@role.Id" method="post">
+                    <button type="submit" class="btn btn-sm btn-danger">
+                        Удалить
+                    </button>
+                </form>
+            </td>
+        </tr>
+}
+</table>
