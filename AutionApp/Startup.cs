@@ -46,7 +46,10 @@ namespace AutionApp
 
 
             services.AddControllersWithViews();
-            services.AddRazorPages();
+            services.AddRazorPages().AddMvcOptions(opt=> 
+            {
+                opt.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(_ => "Это поле обязательно");
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,0 +1,52 @@
+﻿@model Lot
+
+@{
+    // представление лота в маленьком формате
+}
+
+<div class="col-12 lot row">
+    <div class="photo col-3">
+        <a asp-controller="Lots" asp-action="Details" asp-route-id="@Model.LotId">
+            @Html.Raw("<img style='width:160px; height:100px;' src=\"data:image/jpeg;base64,"
+                                + Convert.ToBase64String(Model.Photo) + "\" />")
+        </a>
+    </div>
+    <div class="col-9 flex-row">
+        <div class="lot-info">
+            <div style="max-height: 75px;overflow: hidden;">
+                <div class="title title_l h3 overflowen">
+                    <a asp-controller="Lots" asp-action="Details" asp-route-id="@Model.LotId">
+                        <h3>@Model.Title</h3>
+                    </a>
+                </div>
+            </div>
+            <div class="row offers">
+                <div class="offers__item__expiry">
+                    <b>завершается</b>: <span>@Model.TimeEnd</span>
+                </div>
+                <div class="offers__item__popularity">
+                    <b>ставки: </b> @Model.Bids.Count()
+                </div>
+            </div>
+        </div>
+        <div class="lot-price">
+            <div class="price">
+                <!-- Нормально вычислять цену-->
+                <span>@Model.StartPrice<span class="rouble">руб.</span></span>
+            </div>
+            <div class="delivery">
+                <div style="display:inline">Доставка: За счёт покупателя</div>
+            </div>
+            <div class="seller_block">
+                <div class="offer__seller__label" style="border: none;padding: 0px;margin: 0px;background-color: transparent">
+                    <a class="page-link">
+                        @Model.User.UserName
+                        (<span title="Текущий рейтинг">ВЫВОдИТЬ</span>)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+

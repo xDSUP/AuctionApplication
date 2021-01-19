@@ -7,7 +7,7 @@ namespace AutionApp
     {
         public Category()
         {
-            Parents = new HashSet<Category>();
+            Childs = new HashSet<Category>();
             Lots = new HashSet<Lot>();
         }
 
@@ -18,7 +18,7 @@ namespace AutionApp
         public bool IsGroup { get; set; }
 
         public virtual Category Parent { get; set; }
-        public virtual ICollection<Category> Parents { get; set; }
+        public virtual ICollection<Category> Childs { get; set; }
         public virtual ICollection<Lot> Lots { get; set; }
     }
 }

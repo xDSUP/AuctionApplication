@@ -1,9 +1,10 @@
 ﻿@model IEnumerable<UserViewModel>
 @{
     ViewBag.Title = "Список пользователей";
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
 }
+<h1>Пользователи</h1>
 <a asp-action="CreateUser">Добавить пользователя</a>
-
 <table class="table">
     <tr><th>Email</th><th>Логин</th><th>Права пользователя</th><th>UserName</th></tr>
     @foreach (var user in Model)

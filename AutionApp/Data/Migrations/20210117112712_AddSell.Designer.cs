@@ -4,14 +4,16 @@ using AutionApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AutionApp.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210117112712_AddSell")]
+    partial class AddSell
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -120,10 +122,6 @@ namespace AutionApp.Data.Migrations
                     b.Property<string>("Desc")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<byte[]>("Photo")
-                        .IsRequired()
-                        .HasColumnType("image");
-
                     b.Property<decimal>("StartPrice")
                         .HasColumnType("money");
 
@@ -137,7 +135,6 @@ namespace AutionApp.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
@@ -442,7 +439,7 @@ namespace AutionApp.Data.Migrations
             modelBuilder.Entity("AutionApp.Category", b =>
                 {
                     b.HasOne("AutionApp.Category", "Parent")
-                        .WithMany("Childs")
+                        .WithMany("Parents")
                         .HasForeignKey("ParentId");
                 });
 

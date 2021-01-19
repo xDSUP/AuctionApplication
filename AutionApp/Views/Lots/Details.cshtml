@@ -1,0 +1,166 @@
+﻿@model AutionApp.Lot
+@inject UserManager<User> userMagager
+
+@{
+    ViewData["Title"] = $"Лот - {Model.Title}";
+    ViewData["Price"] = ViewBag.currentPrice + Model.Step;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="bg-white container">
+    <div class="d-flex flex-row justify-content-around">
+        <h2>@Model.Category.Title</h2>
+        <div class="row author">
+            <a asp-controller="Account" action="Details" asp-route-id="@Model.User.Id">
+                @Model.User.UserName
+            </a>
+        </div>
+        <!--Здесь ссылки красиво на все категории-->
+    </div>
+    <div class="d-flex flex-row w-100 justify-content-lg-around">
+        @Html.Raw("<img class=\"img - fluid w-25 h-auto\" src=\"data:image/jpeg;base64,"
+       + Convert.ToBase64String(Model.Photo) + "\" />")
+    <div class="d-flex flex-column w-75 align-content-center align-items-center align-self-center">
+        <h1>@Model.Title</h1>
+        <div class="d-flex flex-row w-75 justify-content-between mt-3">
+            <div class="d-flex flex-column align-content-center align-items-center">
+                <h5>Текущая цена</h5>
+                <div class="row text-danger">
+                    <span>@ViewBag.currentPrice</span>
+                    <span>Руб.</span>
+                </div>
+                <h5>Минимальный шаг цены: </h5>
+                <div class="row text-danger">
+                    <span>@Model.Step</span>
+                    <span>Руб.</span>
+                </div>
+            </div>
+            <div>
+                @{
+                    // если на страницу зашел создатель
+                    if (userMagager.GetUserId(User) == Model.User.Id)
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.LotId">Edit</a>
+                    }
+                    else
+                    {
+                        var bid = new Bid
+                        {
+                            LotId = Model.LotId,
+                            Time = DateTime.Now,
+                            UserId = userMagager.GetUserId(User),
+                            Rate = (decimal)Html.ViewData["Price"],
+                            Lot = Model
+                        };
+                        await Html.RenderPartialAsync("_CreateBidPartial", bid);
+                    }
+                }
+            </div>
+        </div>
+        <div>
+            <ul class="">
+                @{ if (Model.TimeStart > DateTime.Now)
+                    {
+                        <li class="list-group-item-light">
+                            <span>Торги начнутся: @Model.TimeStart</span>
+                        </li>
+                    }
+                }
+                <li class="list-group-item-light">
+                    <span>Статус: @ViewBag.latestState.State.Title</span>
+                </li>
+                <li class="list-group-item-light">
+                    <span>Торги заканчиваются: @Model.TimeEnd</span>
+                </li>
+                <li class="list-group-item-light">
+                    @{ if (Model.Bids.Count() == 0)
+                        {
+                            <span>Ставок пока нет</span>
+                        }
+                        else
+                        {
+                            <span>Ставок: @Model.Bids.Count()</span>
+                        }
+                    }
+                </li>
+                <li class="list-group-item-light">
+                    Стоимость доставки оплачивает: Покупатель
+                </li>
+            </ul>
+        </div>
+    </div>
+        
+    </div>
+</div>
+<div class="bd-example bd-example-tabs">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active show" id="decs-tab" data-toggle="tab" href="#desc" role="tab" aria-controls="desc" aria-selected="true">Описание</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="bids-tab" data-toggle="tab" href="#bids" role="tab" aria-controls="bids" aria-selected="false">Ставки</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="statuses-tab" data-toggle="tab" href="#statuses" role="tab" aria-controls="statuses" aria-selected="false">Статусы</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade active show" id="desc" role="tabpanel" aria-labelledby="desc-tab">
+            <h5>Описание:</h5>
+            <p>
+                @Model.Desc
+            </p>
+        </div>
+        <div class="tab-pane fade" id="bids" role="tabpanel" aria-labelledby="bids-tab">
+            @{ if (Model.Bids.Count() == 0)
+                {
+                    <h5>Ставок пока нет</h5>
+                }
+                else
+                {
+                    <h5>Ставок: @Model.Bids.Count()</h5>
+                    <table class="table">
+                        <thead>
+                            <tr class="d-table-row"><th>Ставка</th><th>Пользователь</th><th>Дата</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var bid in Model.Bids)
+                            {
+                                <tr class="d-table-row">
+                                    <td>@bid.Rate</td>
+                                    <td><a asp-controller="Account" asp-action="Details" asp-route-id="@bid.UserId">@bid.User.UserName</a></td>
+                                    <td>@bid.Time</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            }
+        </div>
+        <div class="tab-pane fade" id="statuses" role="tabpanel" aria-labelledby="statuses-tab">
+            <h5>Статусы:</h5>
+            <div>
+                <table class="table">
+                    <thead>
+                        <tr  class="d-table-row"><th>Статус</th><th>Дата</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var state in Model.States)
+                        {
+                            <tr  class="d-table-row">
+                                <td>@state.State.Title</td>
+                                <td>@state.Time</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <a class="pt-4" asp-action="Index">Back to List</a>
+</div>
+
+
+            
+    

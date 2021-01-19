@@ -1,7 +1,10 @@
-﻿using AutionApp.ViewModels;
+﻿using AutionApp.Data;
+using AutionApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,13 +15,17 @@ namespace AutionApp.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
-        UserManager<User> _userManager;
-        RoleManager<UserRole> _roleManager;
+        private readonly UserManager<User> _userManager;
+        private readonly RoleManager<UserRole> _roleManager;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly ILogger<AdminController> _logger;
 
-        public AdminController(UserManager<User> userManager, RoleManager<UserRole> roleManager)
+        public AdminController(UserManager<User> userManager, RoleManager<UserRole> roleManager, ApplicationDbContext context, ILogger<AdminController> logger)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _dbContext = context;
+            _logger = logger;
         }
 
         public IActionResult Index()
@@ -152,9 +159,83 @@ namespace AutionApp.Controllers
         #endregion
 
         #region Categories
+        public async Task<IActionResult> Categories()
+        {
+            return View(_dbContext.Categories.ToList());
+        }
+
+        public async Task<IActionResult> CreateCategory()
+        {
+            ViewBag.AllCategories = new SelectList(_dbContext.Categories.ToList(), "CategoryId", "Title");
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateCategory(Category category)
+        {
+            // TODO: Проставлять IsGroup внутри, когда подвязывается хотя бы одна другая категория, а не через пользователя
+            if (category.IsGroup)
+                category.Parent = _dbContext.Categories.FirstOrDefault(cat => cat.CategoryId == category.ParentId);
+            else
+                category.ParentId = null;
+            
+            var result = await _dbContext.Categories.AddAsync(category);
+            if(result.State == Microsoft.EntityFrameworkCore.EntityState.Added)
+            {
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction("Categories");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Ошибочка");
+            }
+            return View(category);
+        }
+
+        public async Task<IActionResult> EditCategory(int id)
+        {
+            Category category = _dbContext.Categories.FirstOrDefault(c => c.CategoryId == id);
+            if (category == null)
+                return NotFound();
+            ViewBag.AllCategories = new SelectList(_dbContext.Categories.ToList(), "CategoryId", "Title");
+            return View(category);
+        }
+        
+        [HttpPost]
+        public async Task<IActionResult> EditCategory(Category category)
+        {
+            if (category.IsGroup)
+                category.Parent = _dbContext.Categories.FirstOrDefault(cat => cat.CategoryId == category.ParentId);
+            else
+                category.ParentId = null;
+            
+            var result = _dbContext.Categories.Update(category);
+            if (result.State == Microsoft.EntityFrameworkCore.EntityState.Modified)
+            {
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction("Categories");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Ошибочка");
+            }
+            ViewBag.AllCategories = new SelectList(_dbContext.Categories.ToList(), "CategoryId", "Title");
+            return View(category);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            Category category = _dbContext.Categories.FirstOrDefault(c => c.CategoryId == id);
+            if (category == null)
+                return NotFound();
+            _dbContext.Categories.Remove(category);
+            await _dbContext.SaveChangesAsync();
+            return RedirectToAction("Categories");
+        }
         #endregion
 
-        #region 
+        #region Lots
         #endregion
     }
 }

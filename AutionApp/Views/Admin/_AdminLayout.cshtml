@@ -1,0 +1,21 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<ul class="d-flex p-2 navbar-nav flex-row justify-content-between w-100">
+    <li class="nav-item">
+        <a class="btn nav-link text-dark" asp-action="Users">Пользователи</a>
+    </li>
+    <li class="nav-item">
+        <a class="btn nav-link text-dark" asp-action="Roles">Роли</a>
+    </li>
+    <li class="nav-item">
+        <a class="btn nav-link text-dark" asp-action="Categories">Категории</a>
+    </li>
+    <li class="nav-item">
+        <a class="btn nav-link text-dark" asp-action="Lots">Лоты</a>
+    </li>
+</ul>
+@RenderBody()
+@RenderSection("Scripts", false)

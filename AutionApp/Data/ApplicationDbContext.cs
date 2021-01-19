@@ -15,6 +15,12 @@ namespace AutionApp.Data
         {
         }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.EnableSensitiveDataLogging(true);
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Bid>((Action<Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Bid>>)(entity =>
@@ -45,11 +51,11 @@ namespace AutionApp.Data
                 entity.HasKey(e => new { e.LotId, e.StateId, e.Time });
             });
 
-            modelBuilder.Entity<User>(entity =>
+            modelBuilder.Entity<Sell>(entity =>
             {
-                entity.Property(e => e.Avatar)
-                    .HasColumnType("image");
+                entity.HasKey(e => new { e.LotId, e.UserId });
             });
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -57,6 +63,7 @@ namespace AutionApp.Data
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Feedback> Feedbacks { get; set; }
         public virtual DbSet<Lot> Lots { get; set; }
+        public virtual DbSet<Sell> Sells { get; set; }
         //public virtual DbSet<Roles> Roles { get; set; }
         public virtual DbSet<State> States { get; set; }
         public virtual DbSet<StatesLots> StatesLots { get; set; }

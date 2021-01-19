@@ -6,12 +6,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Views\Users\**" />
+    <Content Remove="Views\Users\**" />
+    <EmbeddedResource Remove="Views\Users\**" />
+    <None Remove="Views\Users\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Data\Migrations\20210117192714_fixPhoto.cs" />
+    <Compile Remove="Data\Migrations\20210117192714_fixPhoto.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.10" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.10" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="3.1.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.10" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.4" />
+    <PackageReference Include="PagedList.Core" Version="1.17.4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Users\" />
+    <Folder Include="wwwroot\img\" />
   </ItemGroup>
 
 </Project>
