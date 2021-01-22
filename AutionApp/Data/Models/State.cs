@@ -8,19 +8,19 @@ namespace AutionApp
         public enum StateLot
         {
             /// <summary>Идут торги, открыт</summary>
-            OPENED,
-            /// <summary>Ждет начала торгов</summary>
-            WAITED,
+            OPENED = 1,
             /// <summary>Закрыт</summary>
-            CLOSED,
+            CLOSED = 2,
+            /// <summary>Ждет начала торгов</summary>
+            WAITED = 3,
             /// <summary>Ждет оплаты</summary>
-            WAITED_MONEY,
+            WAITED_MONEY = 4,
             /// <summary>Ждет отправки</summary>
-            WAITED_SENT,
+            WAITED_SENT = 5,
             /// <summary>Доставляется</summary>
-            DELIVERED,
+            DELIVERED = 6,
             /// <summary>Закончен</summary>
-            FINISHED
+            FINISHED = 7
         }
 
         public static string getText(StateLot state)

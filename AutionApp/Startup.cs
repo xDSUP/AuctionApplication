@@ -1,5 +1,6 @@
 using AutionApp.Data;
 using AutionApp.Data.Models;
+using AutionApp.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Quartz;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,6 +46,32 @@ namespace AutionApp
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
+            services.AddQuartz(q =>
+            {
+                q.UseMicrosoftDependencyInjectionJobFactory();
+                var jobKey = new JobKey("Lot job", "Lot group");
+                q.AddJob<LotHandleJob>(options =>
+                {
+                    options.WithIdentity(jobKey)
+                        .Build();
+
+                });
+
+                q.AddTrigger(options =>
+                {
+                    options.WithIdentity("LotJob Trigger")
+                        .ForJob(jobKey)
+                        .StartAt(DateBuilder.EvenMinuteDate(DateTimeOffset.UtcNow.AddMinutes(1)))
+                        .WithSimpleSchedule(x =>
+                            x.WithIntervalInSeconds(60)
+                                .RepeatForever());
+                });
+            });
+
+            services.AddQuartzServer(options =>
+            {
+                options.WaitForJobsToComplete = true;
+            });
 
             services.AddControllersWithViews();
             services.AddRazorPages().AddMvcOptions(opt=> 

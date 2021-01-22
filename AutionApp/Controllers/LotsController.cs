@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
+using static AutionApp.State;
 
 namespace AutionApp.Controllers
 {
@@ -49,8 +50,9 @@ namespace AutionApp.Controllers
             var lot = await _context.Lots
                 .Include(l => l.Category)
                 .Include(l => l.User)
-                .Include(l => l.Bids).ThenInclude(b=>b.User)
-                .Include(l => l.States).ThenInclude(s=>s.State)
+                .Include(l => l.Bids).ThenInclude(b => b.User)
+                .Include(l => l.States).ThenInclude(s => s.State)
+                .Include(l => l.Sell)
                 .FirstOrDefaultAsync(m => m.LotId == id);
             if (lot == null)
             {
@@ -60,8 +62,7 @@ namespace AutionApp.Controllers
             ViewBag.currentPrice = lot.Bids.Count > 0 ? lot.Bids.Max(b => b.Rate) : lot.StartPrice;
 
             // инфа о статусах есть всегда, тк он создается при создании лота
-            var latestStateTime = lot.States.Max(s => s.Time);
-            var latestState = lot.States.Where(s => s.Time == latestStateTime).First();
+            var latestState = lot.States.First(s => s.Time == lot.States.Max(s => s.Time));
 
             ViewBag.latestState = latestState;
             return View(lot);
@@ -257,6 +258,96 @@ namespace AutionApp.Controllers
             {
                 return View("Details", lot);
             }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> CloseLot(int id)
+        {
+            var lot = await _context.Lots
+                .Include(l=>l.User)
+                .Include(l => l.States)
+                .FirstOrDefaultAsync(l => l.LotId == id);
+            if (lot == null)
+                return RedirectToAction("Index", "Home");
+
+            // если это создатель лота или админ
+            if(lot.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
+            {
+                var lastStatus = lot.States.First(s => s.Time == lot.States.Max(s => s.Time));
+                // TODO: обрабатывать разные статусы
+                changeLotStatus(_context, lot, StateLot.CLOSED);
+                // убираем ставки с этого лота
+                _context.Bids.RemoveRange(lot.Bids);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction("Details", new { id = id });
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> FinishLot(int id)
+        {
+            var lot = await _context.Lots
+                .Include(l => l.User)
+                .Include(l => l.States)
+                .FirstOrDefaultAsync(l => l.LotId == id);
+            if (lot == null)
+                return RedirectToAction("Index", "Home");
+
+            // если это создатель лота или админ
+            if (lot.UserId == _userManager.GetUserId(User) || User.IsInRole("Admin"))
+            {
+                // TODO: обрабатывать разные статусы
+                lot.TimeEnd = DateTime.Now.AddMinutes(1);
+                _context.Lots.Update(lot);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction("Details", new { id = id });
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> UpdateState(int id)
+        {
+            var lot = await _context.Lots
+                .Include(l => l.User)
+                .Include(l => l.States)
+                .Include(l => l.Sell)
+                .FirstOrDefaultAsync(l => l.LotId == id);
+            if (lot == null)
+                return NotFound();
+
+            var latestState = lot.States.First(s => s.Time == lot.States.Max(s => s.Time));
+            // запросил создатель лота
+            if (_userManager.GetUserId(User) == lot.UserId)
+            {
+                if(latestState.StateId == (int)StateLot.WAITED_MONEY)
+                {
+                    changeLotStatus(_context, lot, StateLot.WAITED_SENT);
+                }
+                else if(latestState.StateId == (int)StateLot.WAITED_SENT)
+                {
+                    changeLotStatus(_context, lot, StateLot.DELIVERED);
+                }
+            }
+
+            // запросил покупатель лота
+            if (_userManager.GetUserId(User) == lot.Sell.UserId)
+            {
+                if (latestState.StateId == (int)StateLot.DELIVERED)
+                {
+                    changeLotStatus(_context, lot, StateLot.FINISHED);
+                }
+            }
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details", new { id = id });
+        }
+
+        private void changeLotStatus(ApplicationDbContext _dbContext, Lot lot, StateLot newStatus)
+        {
+            _logger.LogInformation($"{DateTime.Now} Изменен статус лота {lot.LotId} на {State.getText(newStatus)} ");
+            _dbContext.StatesLots.Add(new StatesLots { LotId = lot.LotId, Time = DateTime.Now, StateId = (int)newStatus });
         }
 
         private bool LotExists(int id)

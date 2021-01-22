@@ -55,7 +55,7 @@ namespace AutionApp
         public virtual User User { get; set; }
         public virtual ICollection<Bid> Bids { get; set; }
         public virtual ICollection<StatesLots> States { get; set; }
-        public virtual ICollection<Sell> Sells { get; set; }
+        public virtual Sell Sell { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
