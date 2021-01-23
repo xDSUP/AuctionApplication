@@ -12,10 +12,6 @@ namespace AutionApp.ViewModels
         [Display(Name = "Email")]
         public string Email { get; set; }
 
-        //[Required]
-        //[Display(Name = "Год рождения")]
-        //public int Year { get; set; }
-
         [Required]
         [DataType(DataType.Password)]
         [Display(Name = "Пароль")]
@@ -25,6 +21,6 @@ namespace AutionApp.ViewModels
         [Compare("Password", ErrorMessage = "Пароли не совпадают")]
         [DataType(DataType.Password)]
         [Display(Name = "Подтвердить пароль")]
-        public string PasswordConfirm { get; set; }
+        public string ConfirmPassword { get; set; }
     }
 }

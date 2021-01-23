@@ -11,6 +11,7 @@ namespace AutionApp
         {
             Bids = new HashSet<Bid>();
             Lots = new HashSet<Lot>();
+            Sells = new HashSet<Sell>();
         }
         
         [Column(TypeName = "image")]
