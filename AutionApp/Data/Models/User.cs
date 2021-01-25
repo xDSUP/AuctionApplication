@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AutionApp
@@ -15,6 +16,7 @@ namespace AutionApp
         }
         
         [Column(TypeName = "image")]
+        [Display(Name = "Аватарка")]
         public byte[] Avatar { get; set; }
         
         public virtual ICollection<Bid> Bids { get; set; }

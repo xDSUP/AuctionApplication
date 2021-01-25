@@ -24,10 +24,13 @@
                 <a asp-controller="Lots" asp-action="Create" class="btn btn-light">Добавить новый лот</a>
             }
         </div>
-        <div class="lots">
+        <div class="lots flex-column">
             @foreach (var lot in Model.Lots)
             {
-                @await Html.PartialAsync("_LotMiniComponent", lot)
+                var userFeedbacks = Model.Feedbacks.Where(f => f.UserId == lot.UserId);
+                
+                ViewData["raiting"] = userFeedbacks.Count() > 0 ? userFeedbacks.Average(f => f.Mark) : 0;
+                @await Html.PartialAsync("_LotMiniComponent", lot, ViewData)
             }
         </div>
     </div>

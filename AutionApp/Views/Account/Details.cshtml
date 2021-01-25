@@ -1,11 +1,15 @@
 ﻿@model IndexViewModel
+@*
+    Представление пользователя для других
+*@
 @{
-    ViewData["Title"] = "Профиль";
+    ViewData["Title"] = $"Профиль {Model.User.UserName}";
+    var f = new Feedback { UserId = Model.User.Id };
     ViewData["Rating"] = Model.Feedbacks.Count() > 0 ? Model.Feedbacks.Average(f => f.Mark) : 0;
 }
 
-<h4>@ViewData["Title"]</h4>
-<h5>Рейтинг : @ViewData["Rating"]</h5>
+<h2>@ViewData["Title"]</h2>
+<h5>Рейтинг: @ViewData["Rating"]</h5>
 
 <div class="bd-example bd-example-tabs">
     <ul class="nav nav-tabs nav-fill" id="myTab" role="tablist">
@@ -16,10 +20,10 @@
             <a class="nav-link" id="bids-tab" data-toggle="tab" href="#bids" role="tab" aria-controls="bids" aria-selected="false">Ставки</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="mylot-tab" data-toggle="tab" href="#mylot" role="tab" aria-controls="mylot" aria-selected="false">Мои лоты</a>
+            <a class="nav-link" id="mylot-tab" data-toggle="tab" href="#mylot" role="tab" aria-controls="mylot" aria-selected="false">Лоты</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="mybuyerlot-tab" data-toggle="tab" href="#mybuyerlot" role="tab" aria-controls="mybuyerlot" aria-selected="false">Мои покупки</a>
+            <a class="nav-link" id="mybuyerlot-tab" data-toggle="tab" href="#mybuyerlot" role="tab" aria-controls="mybuyerlot" aria-selected="false">Покупки</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="feedback-tab" data-toggle="tab" href="#feedback" role="tab" aria-controls="feedback" aria-selected="false">Отзывы</a>
@@ -27,34 +31,29 @@
     </ul>
     <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade active show" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-            <h5>Профиль</h5>
+            <h5>Информация</h5>
             <div class="row">
-                <div class="col-md-6">
-                    <form id="profile-form" asp-action="Edit" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                        <div class="form-group">
-                            <input asp-for="@Model.User.Id" class="form-control" disabled hidden />
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="@Model.User.UserName"></label>
-                            <input asp-for="@Model.User.UserName" class="form-control" disabled />
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="@Model.User.Email"></label>
-                            <input asp-for="@Model.User.Email" class="form-control" disabled />
-                        </div>                    
-                        <div class="form-group">  
-                            <label asp-for="@Model.User.PhoneNumber"></label>
-                            <input asp-for="@Model.User.PhoneNumber" class="form-control" />
-                            <span asp-validation-for="@Model.User.PhoneNumber" class="text-danger"></span>
-                        </div>                    
-                        <div class="form-group">  
-                            <label asp-for="@Model.User.Avatar"></label>
-                            <input asp-for="@Model.User.Avatar" class="form-control" />
-                            <span asp-validation-for="@Model.User.Avatar" class="text-danger"></span>
-                        </div>
-                        <button id="update-profile-button" type="submit" class="btn btn-primary">Сохранить</button>
-                    </form>
+                <div class="col-md-12">
+                    <dl class="row">
+                        <dt class="col-sm-2">
+                            @Html.DisplayNameFor(model => model.User.UserName)
+                        </dt>
+                        <dd class="col-sm-10">
+                            @Html.DisplayFor(model => model.User.UserName)
+                        </dd>
+                        <dt class="col-sm-2">
+                            @Html.DisplayNameFor(model => model.User.Email)
+                        </dt>
+                        <dd class="col-sm-10">
+                            @Html.DisplayFor(model => model.User.Email)
+                        </dd>
+                        <dt class="col-sm-2">
+                            @Html.DisplayNameFor(model => model.User.PhoneNumber)
+                        </dt>
+                        <dd class="col-sm-10">
+                            @Html.DisplayFor(model => model.User.PhoneNumber)
+                        </dd>
+                    </dl>
                 </div>
             </div>
         </div>
@@ -77,7 +76,6 @@
                                     <td><a asp-controller="Lots" asp-action="Details" asp-route-id="@bid.LotId">@bid.Lot.Title</a></td>
                                     <td>@bid.Rate</td>
                                     <td>@bid.Time</td>
-                                    <td><a class="btn btn-danger">Удалить</a></td>
                                 </tr>
                             }
                         </tbody>
@@ -86,13 +84,13 @@
             }
         </div>
         <div class="tab-pane fade" id="mylot" role="tabpanel" aria-labelledby="mylot-tab">
-            <h5>Мои лоты:</h5>
+            <h5>Лоты:</h5>
             <div>
                 @await Html.PartialAsync("_lotsTable", Model.User.Lots.ToList())
             </div>
         </div>
         <div class="tab-pane fade" id="mybuyerlot" role="tabpanel" aria-labelledby="mybuyerlot-tab">
-            <h5>Мои покупки:</h5>
+            <h5>Покупки:</h5>
             <div>
                 @{
                     // получаем список покупок
@@ -103,14 +101,14 @@
                     }
                     @await Html.PartialAsync("_lotsTable", listLots);
                 }
-
             </div>
         </div>
 
         <div class="tab-pane fade" id="feedback" role="tabpanel" aria-labelledby="feedback-tab">
-            <h5>Отзывы обо мне:</h5>
+            <h5>Отзывы:</h5>
+            @await Html.PartialAsync("_PartialFeedbackCreateView", f);
             <div>
-                @foreach(var feed in Model.Feedbacks.Reverse())
+                @foreach (var feed in Model.Feedbacks.Reverse())
                 {
                     @await Html.PartialAsync("_FeedbackPartialView", feed)
                 }
@@ -124,3 +122,5 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
+

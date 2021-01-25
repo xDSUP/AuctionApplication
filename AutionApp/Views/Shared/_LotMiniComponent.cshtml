@@ -1,5 +1,5 @@
 ﻿@model Lot
-
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     // представление лота в маленьком формате
 }
@@ -7,11 +7,15 @@
 <div class="col-12 lot row">
     <div class="photo col-3">
         <a asp-controller="Lots" asp-action="Details" asp-route-id="@Model.LotId">
-            @Html.Raw("<img style='width:160px; height:100px;' src=\"data:image/jpeg;base64,"
+            @if (Model.Photo != null && Model.Photo.Count() > 0)
+            {
+                @Html.Raw("<img style='width:160px; height:100px;' src=\"data:image/jpeg;base64,"
                                 + Convert.ToBase64String(Model.Photo) + "\" />")
+            }
+
         </a>
     </div>
-    <div class="col-9 flex-row">
+    <div class="col-9 flex-row justify-content-around">
         <div class="lot-info">
             <div style="max-height: 75px;overflow: hidden;">
                 <div class="title title_l h3 overflowen">
@@ -39,14 +43,14 @@
             </div>
             <div class="seller_block">
                 <div class="offer__seller__label" style="border: none;padding: 0px;margin: 0px;background-color: transparent">
-                    <a class="page-link">
+                    <a class="page-link" asp-controller="Account" asp-action="Details" asp-route-id="@Model.User.Id">
                         @Model.User.UserName
-                        (<span title="Текущий рейтинг">ВЫВОдИТЬ</span>)
+                        (<span title="Текущий рейтинг">@ViewData["raiting"]</span>)
                     </a>
                 </div>
             </div>
         </div>
     </div>
-    </div>
+</div>
 </div>
 

@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -29,7 +29,7 @@ namespace AutionApp.Controllers
         }
 
         // GET: AccountController (если пользователь авторизован, покажем его личный кабинет)
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
             // если пользователь не авторизован
             if (!User.Identity.IsAuthenticated)
@@ -37,12 +37,22 @@ namespace AutionApp.Controllers
                 return RedirectToAction("Index", "Home");
             }
             // пользователь авторизован, покажем его личный кабинет
+            var model = new IndexViewModel();
+            model.User = _dbContext.Users
+                .Include(u=>u.Lots)
+                .Include(u=>u.Sells).ThenInclude(s=>s.Lot)
+                .Include(u=>u.Bids).ThenInclude(b => b.Lot)
+                .First(u => u.Id == _userManager.GetUserId(User));
+            model.Feedbacks = await _dbContext.Feedbacks.Where(f => f.UserId == model.User.Id)
+                .Include(f=>f.User)
+                .Include(f => f.Author)
+                .ToListAsync();
 
-            return View();
+            return View(model);
         }
 
         // GET: AccountController/Details/id
-        public ActionResult Details(string id)
+        public async Task<ActionResult> Details(string id)
         {
             // если айдишка пустая
             if (String.IsNullOrEmpty(id))
@@ -55,22 +65,42 @@ namespace AutionApp.Controllers
                 // пользователь авторизован, покажем его личный кабинет
                 return RedirectToAction("Index");
             }
-            return View();
+
+            var model = new IndexViewModel();
+            model.User = _dbContext.Users
+                .Include(u => u.Lots)
+                .Include(u => u.Sells).ThenInclude(s => s.Lot)
+                .Include(u => u.Bids).ThenInclude(b => b.Lot)
+                .First(u => u.Id == id);
+            model.Feedbacks = await _dbContext.Feedbacks.Where(f => f.UserId == model.User.Id)
+                .Include(f => f.User)
+                .Include(f => f.Author)
+                .ToListAsync();
+
+            return View(model);
         }
 
+
         // GET: AccountController/Edit/5
-        public ActionResult Edit(int id)
+        [Authorize(Roles = "User")]
+        public ActionResult Edit(string id)
         {
+            
             return View();
         }
 
         // POST: AccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> Edit(User user)
         {
             try
             {
+                if (user.Id == _userManager.GetUserId(User))
+                {
+                    _dbContext.Users.Update(user);
+                    await _dbContext.SaveChangesAsync();
+                }
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -81,7 +111,7 @@ namespace AutionApp.Controllers
 
         // GET: AccountController/Registrer
         [AllowAnonymous]
-        public ActionResult Regiter(string returnUrl = null)
+        public ActionResult Register(string returnUrl = null)
         {
             returnUrl = !String.IsNullOrEmpty(returnUrl) ? returnUrl : "~/";
             ViewBag.returnUrl = returnUrl;
@@ -92,7 +122,7 @@ namespace AutionApp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [AllowAnonymous]
-        public async Task<ActionResult> Regiter(RegisterViewModel model, string returnUrl = null)
+        public async Task<ActionResult> Register(RegisterViewModel model, string returnUrl = null)
         {
             returnUrl = !String.IsNullOrEmpty(returnUrl) ? returnUrl : "~/";
 
@@ -101,7 +131,7 @@ namespace AutionApp.Controllers
             if (result.Succeeded)
             {
                 _logger.LogInformation($"Зарегистрировался новый пользователь {model.Email}");
-                _userManager.AddToRoleAsync(user, "User");
+                await _userManager.AddToRoleAsync(user, "User");
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return LocalRedirect(returnUrl);
             }
@@ -162,6 +192,21 @@ namespace AutionApp.Controllers
             _logger.LogInformation($"User {User.Identity.Name} logged out.");
             await _signInManager.SignOutAsync();
             return RedirectToAction(nameof(Index), "Home");
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "User")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> CreateFeedback(Feedback model)
+        {
+            if (ModelState.IsValid)
+            {
+                model.AuthorId = _userManager.GetUserId(User);
+                model.Time = DateTime.Now;
+                var result = await _dbContext.Feedbacks.AddAsync(model);
+                await _dbContext.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Details), new { id=model.UserId });
         }
     }
 }

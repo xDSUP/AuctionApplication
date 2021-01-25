@@ -33,6 +33,7 @@ namespace AutionApp.Controllers
         }
 
         // GET: Lots
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Lots.Include(l => l.Category).Include(l => l.User);

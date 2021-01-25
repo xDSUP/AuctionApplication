@@ -19,87 +19,59 @@
         <!--Здесь ссылки красиво на все категории-->
     </div>
     <div class="d-flex flex-row w-100 justify-content-lg-around">
-        @Html.Raw("<img class=\"img - fluid w-25 h-auto\" src=\"data:image/jpeg;base64,"
+        @if (Model.Photo != null)
+        {
+            @Html.Raw("<img class=\"img - fluid w-25 h-auto\" src=\"data:image/jpeg;base64,"
 + Convert.ToBase64String(Model.Photo) + "\" />")
-    <div class="d-flex flex-column w-75 align-content-center align-items-center align-self-center">
-        <h1>@Model.Title</h1>
-        <div class="d-flex flex-row w-75 justify-content-between mt-3">
-            <div class="d-flex flex-column align-content-center align-items-center">
-                <h5>Текущая цена</h5>
-                <div class="row text-danger">
-                    <span>@ViewBag.currentPrice</span>
-                    <span>Руб.</span>
+        }
+
+        <div class="d-flex flex-column w-75 align-content-center align-items-center align-self-center">
+            <h1>@Model.Title</h1>
+            <div class="d-flex flex-row w-75 justify-content-between mt-3">
+                <div class="d-flex flex-column align-content-center align-items-center">
+                    <h5>Текущая цена</h5>
+                    <div class="row text-danger">
+                        <span>@ViewBag.currentPrice</span>
+                        <span>Руб.</span>
+                    </div>
+                    <h5>Минимальный шаг цены: </h5>
+                    <div class="row text-danger">
+                        <span>@Model.Step</span>
+                        <span>Руб.</span>
+                    </div>
                 </div>
-                <h5>Минимальный шаг цены: </h5>
-                <div class="row text-danger">
-                    <span>@Model.Step</span>
-                    <span>Руб.</span>
-                </div>
-            </div>
-            <div>
-                @{
-                    int stateId = @ViewBag.latestState.StateId;
-                    // если на страницу зашел создатель
-                    if (userMagager.GetUserId(User) == Model.User.Id)
-                    {
-                        // если статус ожидания или закрыт, то можно редактировать
-                        switch (stateId)
+                <div>
+                    @{
+                        int stateId = @ViewBag.latestState.StateId;
+                        // если на страницу зашел создатель
+                        if (userMagager.GetUserId(User) == Model.User.Id)
                         {
-                            case (int)State.StateLot.WAITED:
-                            case (int)State.StateLot.CLOSED:
-                                {
-                                    <a class="btn btn-info" asp-action="Edit" asp-route-id="@Model.LotId">Edit</a>
-                                    break;
-                                }
-                            case (int)State.StateLot.OPENED:
-                                {
-                                    <a class="btn btn-danger" asp-action="CloseLot" asp-route-id="@Model.LotId" title="Закрывает лот и удаляет все ставки(лот можно редактировать и выставить повторно)">Закрыть лот</a>
-                                    <a class="btn btn-danger" asp-action="FinishLot" asp-route-id="@Model.LotId" title="Завершает торги как обычно через 1 мин">Досрочно завершить</a>
-                                    break;
-                                }
-                            case (int)State.StateLot.WAITED_SENT: // для создателя
-                                {
-                                    <a class="btn btn-danger" asp-action="UpdateState" asp-route-id="@Model.LotId">Подтвердить отправку лота покупателю</a>
-                                    break;
-                                }
-                            case (int)State.StateLot.WAITED_MONEY: // для создателя
-                                {
-                                    <a class="btn btn-danger" asp-action="UpdateState" asp-route-id="@Model.LotId">Подтвердить получение денег</a>
-                                    break;
-                                }
-                            case (int)State.StateLot.FINISHED: // для создателя
-                                {
-                                    <h5>Сделка успешно проведена!</h5>
-                                    <span class="text-body">Вы можете оставить отзыв</span>
-                                    break;
-                                }
-                        }
-                    }
-                    else
-                    {
-                        if (stateId == (int)State.StateLot.OPENED)
-                        {
-                            var bid = new Bid
-                            {
-                                LotId = Model.LotId,
-                                Time = DateTime.Now,
-                                UserId = userMagager.GetUserId(User),
-                                Rate = (decimal)Html.ViewData["Price"],
-                                Lot = Model
-                            };
-                            await Html.RenderPartialAsync("_CreateBidPartial", bid);
-                        }
-                        // если зашел покупатель на страницу
-                        if (Model.Sell != null && userMagager.GetUserId(User) == Model.Sell.UserId)
-                        {
+                            // если статус ожидания или закрыт, то можно редактировать
                             switch (stateId)
                             {
-                                case (int)State.StateLot.DELIVERED: // для покупателя
+                                case (int)State.StateLot.WAITED:
+                                case (int)State.StateLot.CLOSED:
                                     {
-                                        <a class="btn btn-danger" asp-action="UpdateState" asp-route-id="@Model.LotId">Я получил лот</a>
+                                        <a class="btn btn-info" asp-action="Edit" asp-route-id="@Model.LotId">Edit</a>
                                         break;
                                     }
-                                case (int)State.StateLot.FINISHED: // для покупателя
+                                case (int)State.StateLot.OPENED:
+                                    {
+                                        <a class="btn btn-danger" asp-action="CloseLot" asp-route-id="@Model.LotId" title="Закрывает лот и удаляет все ставки(лот можно редактировать и выставить повторно)">Закрыть лот</a>
+                                        <a class="btn btn-danger" asp-action="FinishLot" asp-route-id="@Model.LotId" title="Завершает торги как обычно через 1 мин">Досрочно завершить</a>
+                                        break;
+                                    }
+                                case (int)State.StateLot.WAITED_SENT: // для создателя
+                                    {
+                                        <a class="btn btn-danger" asp-action="UpdateState" asp-route-id="@Model.LotId">Подтвердить отправку лота покупателю</a>
+                                        break;
+                                    }
+                                case (int)State.StateLot.WAITED_MONEY: // для создателя
+                                    {
+                                        <a class="btn btn-danger" asp-action="UpdateState" asp-route-id="@Model.LotId">Подтвердить получение денег</a>
+                                        break;
+                                    }
+                                case (int)State.StateLot.FINISHED: // для создателя
                                     {
                                         <h5>Сделка успешно проведена!</h5>
                                         <span class="text-body">Вы можете оставить отзыв</span>
@@ -107,55 +79,87 @@
                                     }
                             }
                         }
-                    }
-                }
-            </div>
-        </div>
-        <div>
-            <ul class="">
-                @{ if (Model.TimeStart > DateTime.Now)
-                    {
-                        <li class="list-group-item-light">
-                            <span>Торги начнутся: @Model.TimeStart</span>
-                        </li>
-                    }
-                }
-                <li class="list-group-item-light">
-                    <span>Статус: @ViewBag.latestState.State.Title</span>
-                </li>
-                <li class="list-group-item-light">
-                    <span>
-                        Торги заканчиваются:
-                        @{
-                            @if (Model.TimeEnd < DateTime.Now)
+                        else
+                        {
+                            if (stateId == (int)State.StateLot.OPENED)
                             {
-                                <b>А уже всё!</b>
+                                var bid = new Bid
+                                {
+                                    LotId = Model.LotId,
+                                    Time = DateTime.Now,
+                                    UserId = userMagager.GetUserId(User),
+                                    Rate = (decimal)Html.ViewData["Price"],
+                                    Lot = Model
+                                };
+                                await Html.RenderPartialAsync("_CreateBidPartial", bid);
+                            }
+                            // если зашел покупатель на страницу
+                            if (Model.Sell != null && userMagager.GetUserId(User) == Model.Sell.UserId)
+                            {
+                                switch (stateId)
+                                {
+                                    case (int)State.StateLot.DELIVERED: // для покупателя
+                                        {
+                                            <a class="btn btn-danger" asp-action="UpdateState" asp-route-id="@Model.LotId">Я получил лот</a>
+                                            break;
+                                        }
+                                    case (int)State.StateLot.FINISHED: // для покупателя
+                                        {
+                                            <h5>Сделка успешно проведена!</h5>
+                                            <span class="text-body">Вы можете оставить отзыв</span>
+                                            break;
+                                        }
+                                }
+                            }
+                        }
+                    }
+                </div>
+            </div>
+            <div>
+                <ul class="">
+                    @{ if (Model.TimeStart > DateTime.Now)
+                        {
+                            <li class="list-group-item-light">
+                                <span>Торги начнутся: @Model.TimeStart</span>
+                            </li>
+                        }
+                    }
+                    <li class="list-group-item-light">
+                        <span>Статус: @ViewBag.latestState.State.Title</span>
+                    </li>
+                    <li class="list-group-item-light">
+                        <span>
+                            Торги заканчиваются:
+                            @{
+                                @if (Model.TimeEnd < DateTime.Now)
+                                {
+                                    <b>А уже всё!</b>
+                                }
+                                else
+                                {
+                                    <b>@Model.TimeEnd</b>
+                                }
+                            }
+                        </span>
+                    </li>
+                    <li class="list-group-item-light">
+                        @{ if (Model.Bids.Count() == 0)
+                            {
+                                <span>Ставок пока нет</span>
                             }
                             else
                             {
-                                <b>Model.TimeEnd</b>
+                                <span>Ставок: @Model.Bids.Count()</span>
                             }
                         }
-                    </span>
-                </li>
-                <li class="list-group-item-light">
-                    @{ if (Model.Bids.Count() == 0)
-                        {
-                            <span>Ставок пока нет</span>
-                        }
-                        else
-                        {
-                            <span>Ставок: @Model.Bids.Count()</span>
-                        }
-                    }
-                </li>
-                <li class="list-group-item-light">
-                    Стоимость доставки оплачивает: Покупатель
-                </li>
-            </ul>
+                    </li>
+                    <li class="list-group-item-light">
+                        Стоимость доставки оплачивает: Покупатель
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
-        
+
     </div>
 </div>
 <div class="bd-example bd-example-tabs">
@@ -190,7 +194,7 @@
                             <tr class="d-table-row"><th>Ставка</th><th>Пользователь</th><th>Дата</th></tr>
                         </thead>
                         <tbody>
-                            @foreach (var bid in Model.Bids)
+                            @foreach (var bid in Model.Bids.OrderByDescending(b=>b.Time))
                             {
                                 <tr class="d-table-row">
                                     <td>@bid.Rate</td>

@@ -46,9 +46,11 @@ namespace AutionApp.Controllers
                 .Include(l => l.Bids)
                 .Where(l => allCategories.Contains(l.Category) && l.TimeEnd>DateTime.Now)
                 .ToListAsync();
+            var feedbacks = await _dbContext.Feedbacks.Include(f => f.Author).ToListAsync();
             IndexAucViewModel model = new IndexAucViewModel {
                 Categories = category.Childs.ToList(),
-                Lots = lots
+                Lots = lots,
+                Feedbacks = feedbacks
             };
             return View(model);
         }

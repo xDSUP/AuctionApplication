@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using AutionApp;
+using Microsoft.AspNetCore.Identity;
 
 namespace AutionApp.Data
 {
@@ -63,6 +64,7 @@ namespace AutionApp.Data
         public virtual DbSet<Feedback> Feedbacks { get; set; }
         public virtual DbSet<Lot> Lots { get; set; }
         public virtual DbSet<Sell> Sells { get; set; }
+        public virtual DbSet<User> Users { get; set; }
         //public virtual DbSet<Roles> Roles { get; set; }
         public virtual DbSet<State> States { get; set; }
         public virtual DbSet<StatesLots> StatesLots { get; set; }

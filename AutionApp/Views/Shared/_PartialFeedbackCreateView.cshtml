@@ -1,0 +1,36 @@
+﻿@model AutionApp.Feedback
+@{
+    var sad = 12;
+}
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="CreateFeedback">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <input asp-for="AuthorId" class="form-control" hidden />
+            </div>
+            <div class="form-group">
+                <input asp-for="UserId" class="form-control" hidden />
+            </div>
+            <div class="form-group">
+                <label asp-for="Desc" class="control-label"></label>
+                <textarea asp-for="Desc" class="form-control"></textarea>
+                <span asp-validation-for="Desc" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Mark" class="control-label"></label>
+                <input asp-for="Mark" class="form-control" />
+                <span asp-validation-for="Mark" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Оставить отзыв" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

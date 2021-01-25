@@ -9,5 +9,6 @@ namespace AutionApp.ViewModels
     {
         public List<Category> Categories { get; set; }
         public List<Lot> Lots { get; set; }
+        public List<Feedback> Feedbacks { get; set; }
     }
 }

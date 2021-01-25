@@ -62,10 +62,10 @@
                 @Html.DisplayFor(modelItem => item.Step)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Category.CategoryId)
+                @Html.DisplayFor(modelItem => item.Category.Title)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.User.Id)
+                <a asp-controller="Account" asp-action="Details" asp-route-id="@item.UserId">@Html.DisplayFor(model => item.User.UserName)</a>
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.LotId">Edit</a> |
